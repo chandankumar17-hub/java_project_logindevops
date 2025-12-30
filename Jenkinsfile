@@ -16,11 +16,15 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-            steps {
-                sh '''
-                    echo "Building Docker image..."
-                    docker build -t my-app:${IMAGE_TAG} .
-                '''
+           steps {
+        sh '''
+        echo "Workspace content:"
+        ls -la
+        cd $WORKSPACE/Java-Login-App
+        echo "Repo root content:"
+        ls -la
+        docker build -t my-app:5 .
+        '''
             }
         }
 
