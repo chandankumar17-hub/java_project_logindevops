@@ -11,28 +11,28 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
+                echo "Checking out code from GitHub..."
                 checkout scm
             }
         }
 
         stage('Build Docker Image') {
-           steps {
-        sh '''
-        echo "Workspace content:"
-        ls -la
-        cd $WORKSPACE/Java-Login-App
-        echo "Repo root content:"
-        ls -la
-        docker build -t my-app:5 .
-        '''
+            steps {
+                sh '''
+                echo "Workspace content:"
+                ls -la
+
+                echo "Building Docker image from correct path..."
+                docker build -t my-app:${IMAGE_TAG} -f DevOps-Project-01/Java-Login-App/Dockerfile DevOps-Project-01/Java-Login-App
+                '''
             }
         }
 
         stage('Trivy Scan (Image Lint)') {
             steps {
                 sh '''
-                    echo "Running Trivy scan..."
-                    trivy image --exit-code 0 --severity HIGH,CRITICAL --no-progress --format table my-app:${IMAGE_TAG}
+                echo "Running Trivy scan..."
+                trivy image --exit-code 0 --severity HIGH,CRITICAL --no-progress --format table my-app:${IMAGE_TAG}
                 '''
             }
         }
@@ -40,13 +40,13 @@ pipeline {
         stage('Push Image to ECR') {
             steps {
                 sh '''
-                    echo "Logging in to ECR..."
-                    aws ecr get-login-password --region ${AWS_REGION} | \
-                        docker login --username AWS --password-stdin 476360959449.dkr.ecr.us-east-1.amazonaws.com
+                echo "Logging in to AWS ECR..."
+                aws ecr get-login-password --region ${AWS_REGION} | \
+                    docker login --username AWS --password-stdin 476360959449.dkr.ecr.us-east-1.amazonaws.com
 
-                    echo "Tagging & pushing image..."
-                    docker tag my-app:${IMAGE_TAG} ${ECR_REPO}:${IMAGE_TAG}
-                    docker push ${ECR_REPO}:${IMAGE_TAG}
+                echo "Tagging & pushing image to ECR..."
+                docker tag my-app:${IMAGE_TAG} ${ECR_REPO}:${IMAGE_TAG}
+                docker push ${ECR_REPO}:${IMAGE_TAG}
                 '''
             }
         }
@@ -58,10 +58,11 @@ pipeline {
             echo "Pipeline finished"
         }
         failure {
-            echo "❌ Trivy scan or ECR push failed!"
+            echo "❌ Pipeline failed during scan or push!"
         }
         success {
-            echo "✅ Image scanned and pushed to ECR successfully!"
+            echo "✅ Docker image scanned and pushed to ECR successfully!"
         }
     }
 }
+```
