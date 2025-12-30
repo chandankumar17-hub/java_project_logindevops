@@ -22,13 +22,13 @@ pipeline {
                 echo "Workspace content:"
                 ls -la
 
-                echo "Building Docker image from correct path..."
+                echo "Building Docker image..."
                 docker build -t my-app:${IMAGE_TAG} -f DevOps-Project-01/Java-Login-App/Dockerfile DevOps-Project-01/Java-Login-App
                 '''
             }
         }
 
-        stage('Trivy Scan (Image Lint)') {
+        stage('Trivy Scan') {
             steps {
                 sh '''
                 echo "Running Trivy scan..."
@@ -44,7 +44,7 @@ pipeline {
                 aws ecr get-login-password --region ${AWS_REGION} | \
                     docker login --username AWS --password-stdin 476360959449.dkr.ecr.us-east-1.amazonaws.com
 
-                echo "Tagging & pushing image to ECR..."
+                echo "Tagging & pushing image..."
                 docker tag my-app:${IMAGE_TAG} ${ECR_REPO}:${IMAGE_TAG}
                 docker push ${ECR_REPO}:${IMAGE_TAG}
                 '''
@@ -58,11 +58,10 @@ pipeline {
             echo "Pipeline finished"
         }
         failure {
-            echo "❌ Pipeline failed during scan or push!"
+            echo "❌ Pipeline failed!"
         }
         success {
-            echo "✅ Docker image scanned and pushed to ECR successfully!"
+            echo "✅ Image pushed to ECR successfully!"
         }
     }
 }
-```
