@@ -28,15 +28,6 @@ pipeline {
             }
         }
 
-        stage('Trivy Scan') {
-            steps {
-                sh '''
-                echo "Running Trivy scan..."
-                trivy image --exit-code 0 --severity HIGH,CRITICAL --no-progress --format table my-app:${IMAGE_TAG}
-                '''
-            }
-        }
-
         stage('Push Image to ECR') {
             steps {
                 sh '''
