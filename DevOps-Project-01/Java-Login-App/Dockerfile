@@ -10,10 +10,11 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 
-COPY --from=build /app/target/*.jar app.jar
+# ✅ Corrected COPY path
+COPY --from=build /app/target/*.jar /app/app.jar
 
 RUN useradd -m appuser
 USER appuser
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
